@@ -41,10 +41,12 @@ resource "yandex_compute_instance" "kube-master" {
     cores  = 2
     memory = 8
   }
-  
-  scheduling_policy {
-    preemptible = true
-  }
+
+# Uncomment the section below to make an preemptible instance
+
+  # scheduling_policy {
+  #   preemptible = true
+  # }
 
   boot_disk {
     initialize_params {
@@ -65,10 +67,6 @@ resource "yandex_compute_instance" "kube-master" {
     create = "60m"
     delete = "60m"
   }
-
-  # provisioner "local-exec" {
-  #   command = "ansible-playbook -i ${self.network_interface[0].nat_ip_address} ../ansible/config-kube-master.yml"
-  # }
 }
 
 resource "yandex_compute_instance" "kube-worker" {
@@ -77,12 +75,14 @@ resource "yandex_compute_instance" "kube-worker" {
 
   resources {
     cores  = 2
-    memory = 8
+    memory = 16
   }
 
-  scheduling_policy {
-    preemptible = true
-  }
+# Uncomment the section below to make an preemptible instance
+
+  # scheduling_policy {
+  #   preemptible = true
+  # }
 
   boot_disk {
     initialize_params {
@@ -94,6 +94,7 @@ resource "yandex_compute_instance" "kube-worker" {
     subnet_id = yandex_vpc_subnet.sf-dp-default-subnet.id
     nat    = true
   }
+
   metadata = {
     ssh-keys  = "admin_user:${file("~/.ssh/id_yandex.pub")}"
     user-data = "#cloud-config\ndatasource:\n Ec2:\n  strct_id: false\nssh_pwauth: no\nusers:\n- name: admin_user\n  sudo: ALL=(ALL) NOPASSWD:ALL\n  shell: /bin/bash\n  ssh_authorized_keys:\n  - ssh-rsa ssh_pubkey\n#cloud-config\nruncmd: []"
@@ -103,10 +104,6 @@ resource "yandex_compute_instance" "kube-worker" {
     create = "60m"
     delete = "60m"
   }
-
-  # provisioner "local-exec" {
-  #   command = "ansible-playbook -i ${self.network_interface[0].nat_ip_address} ../ansible/config-kube-worker.yml"
-  # }
 }
 
 resource "yandex_compute_instance" "srv" {
@@ -118,9 +115,11 @@ resource "yandex_compute_instance" "srv" {
     memory = 16
   }
 
-  scheduling_policy {
-    preemptible = true
-  }
+# Uncomment the section below to make an preemptible instance
+
+  # scheduling_policy {
+  #   preemptible = true
+  # }
 
   boot_disk {
     initialize_params {
@@ -142,12 +141,7 @@ resource "yandex_compute_instance" "srv" {
     delete = "60m"
   }
   
-  # provisioner "local-exec" {
-  #   command = "ansible-playbook -i ${self.network_interface[0].nat_ip_address} ../ansible/config-srv.yml"
-  # }
 }
-
-
 
 output "external_ip_kube-master" {
   value = yandex_compute_instance.kube-master.network_interface[0].nat_ip_address
@@ -168,22 +162,3 @@ output "local_ip_kube-worker" {
 output "srv_ip_srv" {
   value = yandex_compute_instance.srv.network_interface[0].ip_address
 }
-
-
-resource "null_resource" "config-permit" {
-  provisioner "local-exec" {
-    command = "printf \"cloud:\n  children:\n    kube-worker:\n      hosts:\n        ${yandex_compute_instance.kube-worker.network_interface[0].nat_ip_address}:\n    kube-master:\n      hosts:\n        ${yandex_compute_instance.kube-master.network_interface[0].nat_ip_address}:\n    srv:\n      hosts:\n        ${yandex_compute_instance.srv.network_interface[0].nat_ip_address}:\n  vars:\n    ansible_user: admin_user\n    ansible_ssh_private_key_file: /home/arnsdx/.ssh/id_yandex\n    ansible_host_key_checking: false\n    ansible_become_method: sudo\n\" > /home/arnsdx/SF_DP/ansible/inventory.yml"
-  }
-}
-
-# resource "null_resource" "sleep-5m" {
-#   provisioner "local-exec" {
-#     command = "sleep 5m"
-#   }
-# }
-
-# resource "null_resource" "start-remote-configuration" {
-#   provisioner "local-exec" {
-#     command = "ansible-playbook -i ../ansible/inventory.yml ../ansible/config.yml"
-#   }
-# }
