@@ -22,9 +22,9 @@ To use this Terraform configuration, ensure you have the following installed:
 Usage
 -----
 
-    git clone https://github.com/yourusername/your-repo.git
+    git clone https://github.com/SF-DP-org/terraform.git
     
-    cd your-repo
+    cd terraform
     
     terraform init
     
