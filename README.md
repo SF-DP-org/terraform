@@ -22,10 +22,13 @@ To use this Terraform configuration, ensure you have the following installed:
 Usage
 -----
 
-git clone https://github.com/yourusername/your-repo.git
-cd your-repo
-terraform init
-terraform apply
+    git clone https://github.com/yourusername/your-repo.git
+    
+    cd your-repo
+    
+    terraform init
+    
+    terraform apply
 
 License
 
